@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html ng-app="MenuSearchApp">
+<head>
+  <title>Menu Search App</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  
+</head>
+<body ng-controller="NarrowItDownController as narrowCtrl">
+  <div>
+    <input type="text" ng-model="narrowCtrl.searchTerm" placeholder="Enter search term" />
+    <button ng-click="narrowCtrl.narrowItDown()">Narrow It Down For Me!</button>
+  </div>
+
+  <div ng-if="narrowCtrl.foundItems.length > 0">
+    <ul>
+      <li ng-repeat="item in narrowCtrl.foundItems">
+        <h3>{{ item.name }}</h3>
+        <p>{{ item.short_name }}, {{ item.description }}</p>
+        <button ng-click="narrowCtrl.removeItem($index)">Don't want this one!</button>
+      </li>
+    </ul>
+  </div>
+
+  <div ng-if="narrowCtrl.foundItems.length === 0 && narrowCtrl.searchTerm !== ''">
+    <p>Nothing found</p>
+  </div>
+</body>
+<script>
+  (function () {
+  'use strict';
+
+  angular.module('MenuSearchApp', [])
+    .controller('NarrowItDownController', NarrowItDownController)
+    .service('MenuSearchService', MenuSearchService)
+    .constant('ApiBasePath', 'https://restaurant-server.com/api');
+
+  NarrowItDownController.$inject = ['MenuSearchService'];
+  function NarrowItDownController(MenuSearchService) {
+    var narrowCtrl = this;
+    narrowCtrl.searchTerm = '';
+    narrowCtrl.foundItems = [];
+
+    narrowCtrl.narrowItDown = function () {
+      if (narrowCtrl.searchTerm.trim() !== '') {
+        var promise = MenuSearchService.getMatchedMenuItems(narrowCtrl.searchTerm);
+
+        promise.then(function (response) {
+          narrowCtrl.foundItems = response;
+        })
+        .catch(function (error) {
+          console.log('Error:', error);
+        });
+      } else {
+        narrowCtrl.foundItems = [];
+      }
+    };
+
+    narrowCtrl.removeItem = function (index) {
+      narrowCtrl.foundItems.splice(index, 1);
+    };
+  }
+
+  MenuSearchService.$inject = ['$http', 'ApiBasePath'];
+  function MenuSearchService($http, ApiBasePath) {
+    var service = this;
+
+    service.getMatchedMenuItems = function (searchTerm) {
+      return $http({
+        method: 'GET',
+        url: (ApiBasePath + '/menu_items.json')
+      }).then(function (response) {
+        var foundItems = [];
+        var menuItems = response.data.menu_items;
+
+        for (var i = 0; i < menuItems.length; i++) {
+          if (menuItems[i].description.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1) {
+            foundItems.push(menuItems[i]);
+          }
+        }
+
+        return foundItems;
+      });
+    };
+  }
+})();
+
+</script>
+</html>
