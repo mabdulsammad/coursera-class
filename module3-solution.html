@@ -24,9 +24,7 @@
   <div ng-if="narrowCtrl.foundItems.length === 0 && narrowCtrl.searchTerm !== ''">
     <p>Nothing found</p>
   </div>
-  <div class="samad">
-i am abdul samad    
-  </div>
+
 </body>
 <script>
   (function () {
@@ -35,7 +33,7 @@ i am abdul samad
   angular.module('MenuSearchApp', [])
     .controller('NarrowItDownController', NarrowItDownController)
     .service('MenuSearchService', MenuSearchService)
-    .constant('ApiBasePath', 'https://restaurant-server.com/api');
+    .constant('ApiBasePath', 'http://davids-restaurant.herokuapp.com');
 
   NarrowItDownController.$inject = ['MenuSearchService'];
   function NarrowItDownController(MenuSearchService) {
